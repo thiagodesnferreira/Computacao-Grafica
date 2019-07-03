@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Sistema Solar</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link type="text/css" rel="stylesheet" href="main.css">
+		<style>
+			body
+			{
+				color: yellow;
+				font-family:Arial;
+				background-color:#B2B2B2;
+			}
+			a 
+			{
+				color: #08f;
+			}
+			footer 
+			{
+				position: fixed;
+				bottom: 0;
+				right: 0;
+				color: white;
+				font: 10pt monospace;
+				text-align: right;
+				padding: 10pt;
+				margin: 5pt;
+				border: 1px solid white;
+				cursor: default;
+				z-index: 999;
+				background: rgba(0,0,0,0.75);
+			}
+			
+			.infopanel
+			{
+				position: fixed;
+				top: 5px;
+				left: 45%;
+				width:10%;
+				color: white;
+				font: 10pt monospace;
+				
+				padding: 10pt;
+				margin: 5pt;
+				border: 1px solid white;
+				cursor: default;
+				z-index: 999;
+				background: rgba(0,0,0,0.75);
+			}
+			
+			.infopanel2
+			{
+				position: fixed;
+				bottom: 0;
+				left: 0;
+				width:70%;
+				color: white;
+				font: 10pt monospace;
+				
+				padding: 10pt;
+				margin: 5pt;
+				border: 1px solid white;
+				cursor: default;
+				z-index: 999;
+				background: rgba(0,0,0,0.75);
+			}
+			
+			.panel span {
+				color: #FF0;
+				font-weight: bold;
+				text-decoration: underline;
+			}
+			
+			.lds-ring {
+			  display: inline-block;
+			  position: relative;
+			  width: 64px;
+			  height: 64px;
+			}
+			.lds-ring div {
+			  box-sizing: border-box;
+			  display: block;
+			  position: absolute;
+			  width: 51px;
+			  height: 51px;
+			  margin: 6px;
+			  border: 6px solid #007bff;
+			  border-radius: 50%;
+			  animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+			  border-color: #007bff transparent transparent transparent;
+			}
+			.lds-ring div:nth-child(1) {
+			  animation-delay: -0.45s;
+			}
+			.lds-ring div:nth-child(2) {
+			  animation-delay: -0.3s;
+			}
+			.lds-ring div:nth-child(3) {
+			  animation-delay: -0.15s;
+			}
+			@keyframes lds-ring {
+			  0% {
+				transform: rotate(0deg);
+			  }
+			  100% {
+				transform: rotate(360deg);
+			  }
+			}
+
+			.blink_me {
+			  animation: blinker 3s linear infinite;
+			}
+
+			@keyframes blinker {  
+			  50% { opacity: 0; }
+			}
+			
+			#loading{
+				margin-top:400px;
+			}
+		</style>
+		<script>
+			function readf()
+			{
+					document.getElementById('main').style.display ="inherit";
+					document.getElementById('loading').style.display ="none";
+			}
+		</script>
+	</head>
+	<body onload="readf()">
+	<div class=' container col-sm-12 mx-auto text-center' id="loading" align='center' style='margin-top:250px; margin-bottom:30px;'><div class='lds-ring'><div></div><div></div><div></div><div></div></div> <div class='blink_me'> <h5 style="color:#007bff">Carregando Texturas... </h5></div>	</div>
+	<div style='display:none' id="main">
+		<div id="container"></div>
+		
+		
+
+		<script src="three.js"></script>
+		
+		<script src="OrbitControls.js"></script>
+
+		<script>
+
+			// scene size
+			var WIDTH = window.innerWidth;
+			var HEIGHT = window.innerHeight;
+			var lightness= 0;
+			
+			var moveflag=false;
+			// camera
+			var VIEW_ANGLE = 50;
+			var ASPECT = WIDTH / HEIGHT;
+			var NEAR = 1;
+			var FAR = 20000;
+			var MAXDISTANCE = 20000;
+			var MINDISTANCE = 20;
+			var viewer = 0;
+			var camera, scene, renderer;
+			
+			var planetas = [];
+			var planetasCamera = [];
+			var planetasNome = [  
+				//NOME, TAMANHO, DISTANCIA DO SOL, COR, NUM DE LUAS, DIASROTACAO, VELTRANSLACAO
+				["Mercúrio", 1, 120, 0XFF0000, 0, 0.05, "mercurio.jpg", "Mercúrio é o menor e mais interno planeta do Sistema Solar, orbitando o Sol a cada 87,969 dias terrestres. A sua órbita tem a maior excentricidade e o seu eixo apresenta a menor inclinação em relação ao plano da órbita dentre todos os planetas do Sistema Solar. Mercúrio completa três rotações em torno de seu eixo a cada duas órbitas. O periélio da órbita de Mercúrio apresenta uma precessão de 5600 segundos de arco por século, um fenômeno completamente explicado apenas a partir do século XX pela Teoria da Relatividade Geral formulada por Albert Einstein.A sua aparência é brilhante quando observado da Terra, tendo uma magnitude aparente que varia de −2,6 a 5,7, embora não seja facilmente observado pois sua separação angular do Sol é de apenas 28,3º. Uma vez que Mercúrio normalmente se perde no intenso brilho solar, exceto em eclipses solares, só pode ser observado a olho nu durante o crepúsculo matutino ou vespertino."],
+				["Vênus", 3, 160, 0xCFB53B, 0, 0.017, "venus.jpg", "Vénus (português europeu) ou Vênus (português brasileiro) (AO 1990: Vénus ou Vênus)é o segundo planeta do Sistema Solar em ordem de distância a partir do Sol, orbitando-o a cada 224,7 dias. Recebeu seu nome em homenagem à deusa romana do amor e da beleza Vénus, equivalente a Afrodite. Depois da Lua, é o objeto mais brilhante do céu noturno, atingindo uma magnitude aparente de -4,6, o suficiente para produzir sombras. A distância média da Terra a Vênus é de 0,28 AU, sendo esta a menor distância entre qualquer par de planetas. Como Vénus se encontra mais próximo do Sol do que a Terra, ele pode ser visto aproximadamente na mesma direção do Sol (sua maior elongação é de 47,8°). Vénus atinge seu brilho máximo algumas horas antes da alvorada ou depois do ocaso, sendo por isso conhecido como a estrela da manhã (Estrela d'Alva) ou estrela da tarde (Vésper); também é chamado Estrela do Pastor."],
+				["Terra", 3, 200, 0x0000FF, 1, 0.012, "terra.jpg", "A Terra é o terceiro planeta mais próximo do Sol, o mais denso e o quinto maior dos oito planetas do Sistema Solar. É também o maior dos quatro planetas telúricos. É por vezes designada como Mundo ou Planeta Azul. Lar de milhões de espécies de seres vivos, incluindo os humanos, a Terra é o único corpo celeste onde é conhecida a existência de vida. O planeta formou-se há 4,56 bilhões de anos, e a vida surgiu na sua superfície um bilhão de anos depois. Desde então, a biosfera terrestre alterou significativamente a atmosfera e outros fatores abióticos do planeta, permitindo a proliferação de organismos aeróbicos, bem como a formação de uma camada de ozônio, a qual, em conjunto com o campo magnético terrestre, bloqueia radiação solar prejudicial, permitindo a vida no planeta. As propriedades físicas do planeta, bem como sua história geológica e órbita, permitiram que a vida persistisse durante este período. Acredita-se que a Terra poderá suportar vida durante pelo menos outros 500 milhões de anos."],
+				["Marte", 2, 240, 0x00FFFF, 1, 0.00625, "marte.jpg", "Marte é o quarto planeta a partir do Sol, o segundo menor do Sistema Solar. Batizado em homenagem ao deus romano da guerra, muitas vezes é descrito como o 'Planeta Vermelho', porque o óxido de ferro predominante em sua superfície lhe dá uma aparência avermelhada. Marte é um planeta rochoso com uma atmosfera fina, com características de superfície que lembram tanto as crateras de impacto da Lua quanto vulcões, vales, desertos e calotas polares da Terra. O período de rotação e os ciclos sazonais de Marte são também semelhantes aos da Terra, assim como é a inclinação que produz as suas estações do ano. Marte é o lar do Monte Olimpo, a segunda montanha mais alta conhecida no Sistema Solar (a mais alta em um planeta), e do Valles Marineris, um desfiladeiro gigantesco. A suave Bacia Polar Norte, no hemisfério norte marciano, cobre cerca de 40% do planeta e pode ser uma enorme marca de impacto. Marte tem duas luas conhecidas, Fobos e Deimos, que são pequenas e de forma irregular. Estas luas podem ser asteroides capturado, semelhante ao 5261 Eureka, um asteroide troiano marciano."],
+				["Jupter", 6, 300, 0xC0D9D9, 1, 0.001, "jupiter.jpg", "Júpiter é o maior planeta do Sistema Solar, tanto em diâmetro quanto em massa, e é o quinto mais próximo do Sol. Possui menos de um milésimo da massa solar, contudo tem 2,5 vezes a massa de todos os outros planetas em conjunto. É um planeta gasoso, junto com Saturno, Urano e Netuno. Estes quatro planetas são por vezes chamados de planetas jupiterianos ou planetas jovianos, e são os quatro gigantes gasosos, isto é, que não são compostos primariamente de matéria sólida."],
+				["Saturno", 5, 360, 0x00FF00, 1, 0.0005, "saturno.jpg", "Saturno é o sexto planeta a partir do Sol e o segundo maior do Sistema Solar atrás de Júpiter. Pertencente ao grupo dos gigantes gasosos, possui cerca de 95 massas terrestres e orbita a uma distância média de 9,5 unidades astronômicas. Possui um pequeno núcleo rochoso, circundado por uma espessa camada de hidrogênio metálico e hélio. A sua atmosfera, também composta principalmente de hidrogênio, apresenta faixas com fortes ventos, cuja energia provém tanto do calor recebido do Sol quanto da energia irradiada de seu centro. Entretanto, estas bandas possuem aspecto pouco proeminente, com coloração que varia do marrom ao amarelado, devido à espessa névoa que envolve o planeta, além das camadas de nuvens. Sazonalmente surgem grandes sistemas de tempestades, além de vórtices permanentes existentes nos polos."],
+				["Urânio", 4, 420, 0x00FF00, 1, 0.00015, "urano.jpg", "Urano (Úrano em Portugal) é o sétimo planeta a partir do Sol, o terceiro maior e o quarto mais massivo dos oito planetas do Sistema Solar. Foi nomeado em homenagem ao deus grego do céu, Urano, o pai de Cronos (Saturno) e o avô de Zeus (Júpiter). Embora seja visível a olho nu em boas condições de visualização, não foi reconhecido pelos astrônomos antigos como um planeta devido a seu pequeno brilho e lenta órbita. William Herschel anunciou sua descoberta em 13 de março de 1781, expandindo as fronteiras do Sistema Solar pela primeira vez na história moderna. Urano foi também o primeiro planeta a ser descoberto por meio de um telescópio."],
+				["Netuno", 4, 540, 0x23238E, 1, 0.00007, "netuno.jpg", "Netuno (pt-BR) ou Neptuno (pt) (AO 1990: Netuno ou Neptuno)[2][3] é o oitavo planeta do Sistema Solar, o último a partir do Sol desde a reclassificação de Plutão para a categoria de planeta anão, em 2006. Pertencente ao grupo dos gigantes gasosos, possui um tamanho ligeiramente menor que o de Urano, mas maior massa, equivalente a 17 massas terrestres. Netuno orbita o Sol a uma distância média de 30,1 unidades astronômicas."]
+				
+			]
+			
+			var cameraControls;
+
+			var sol, estrelas;
+
+			init();
+			animate();
+
+			function init() {
+
+				var container = document.getElementById( 'container' );
+
+				// Renderer
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( WIDTH, HEIGHT );
+				renderer.shadowMap.enabled = true;
+				renderer.shadowMap.type = THREE.BasicShadowMap;
+				container.appendChild( renderer.domElement );
+
+				// Cena
+				scene = new THREE.Scene();
+				
+				// Camera
+				camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR );
+				camera.position.set( 0, 220, 500 );
+			
+
+				cameraControls = new THREE.OrbitControls( camera, renderer.domElement );
+				cameraControls.target.set( 0, 0, 0 );
+				camera.lookAt(new THREE.Vector3(0,0,0));
+				cameraControls.maxDistance = MAXDISTANCE ;
+				cameraControls.minDistance = MINDISTANCE;
+				cameraControls.update();
+
+				
+				// Luz
+				var mainLight = new THREE.AmbientLight( 0xffffff, 0.3 );
+				scene.add( mainLight );
+				
+				//Sol
+				sol = criaSol();
+			
+				for(i=0; i< planetasNome.length ; i++)
+				{
+					criaPlaneta(planetasNome[i][0], planetasNome[i][1], planetasNome[i][2], planetasNome[i][3], planetasNome[i][4], planetasNome[i][5], planetasNome[i][6]);
+				}
+			
+				
+				//Estrelas
+				criaEstrelas();
+				
+			
+			}
+
+			function animate() {
+				
+				requestAnimationFrame( animate );
+				var timer = Date.now() * 0.01;
+				renderer.render( scene, camera );
+				
+				
+				if(moveflag==true)
+				{
+				
+					// BRILHO DAS ESTRELAS
+					if(lightness==100)
+					{
+						lightness=70;
+					}
+					else
+					{
+						lightness++;
+					}
+					estrelas.material.color = new THREE.Color("hsl(255, 100%, " + lightness + "%)");
+					
+					//Rotacao Sol
+					sol.rotation.y += 0.001;
+					// ROTACAO 
+					for(i=0; i< planetas.length ; i++)
+					{
+						planetas[i].rotation.y  +=  planetasNome[i][5];
+						
+						planetasCamera[i].rotation.z += 0.001;
+						
+					}
+				}
+				
+				
+				
+				
+
+			}
+			
+			//NOME, TAMANHO, DISTANCIA DO SOL, COR, NUM DE LUAS
+			function criaPlaneta(nome, raio, positionx, cor, nluas, rotacao, imagem)
+			{
+				var planetaPivot = new THREE.Object3D();
+				sol.add( planetaPivot );
+				
+				
+				var texture = new THREE.TextureLoader().load( 'images/'+imagem );
+				// Planeta
+				var geometry   = new THREE.SphereGeometry( 5, 32, 32 );
+				
+				var material =  new THREE.MeshPhongMaterial({ map: texture });
+				
+				
+				var planeta = new THREE.Mesh(geometry, material);
+				
+				glows = [];
+				planeta.castShadow = true;
+				planeta.receiveShadow = true
+				planeta.scale.set(raio,raio,raio);
+				planeta.position.set(positionx, 0, 0);
+				planetaPivot.add(planeta);
+				planetas.push(planetaPivot);
+				
+				planetasCamera.push(planeta);
+				
+				
+				
+				
+
+				// Rota de Translacao
+				var geometry = new THREE.RingGeometry( positionx-1, positionx, 500 );
+				var material = new THREE.MeshBasicMaterial( { color: 0xff0000, side: THREE.DoubleSide } );
+				var mesh = new THREE.Mesh( geometry, material );
+				mesh.rotation.x =  Math.PI / 2;
+				scene.add( mesh );
+				
+				
+				if(nluas>0)
+				{
+				}
+			}
+			function criaSol()
+			{
+
+				var light = new THREE.PointLight( 0xffffffff, 1.5, 20000 );
+				light.position.set(0,0,0);
+				light.castShadow = true;
+				scene.add( light );
+				// SOL
+				var sol= new THREE.Mesh(
+					new THREE.SphereGeometry( 5, 32, 32 ),
+					new THREE.MeshBasicMaterial({
+					  color: 0xFFFFFF,
+					  opacity:1
+					})
+				),
+				glows = [];
+				sol.castShadow = false;
+				scene.add(sol);
+				
+				
+				for (var i = 1, scaleX = 1.1, scaleY = 1.1, scaleZ = 1.1; i < 5; i++) {
+				  var starGlow = new THREE.Mesh(
+					new THREE.SphereGeometry( 5, 32, 32 ),
+					new THREE.MeshBasicMaterial({
+					  color: 0xFFFF00,
+					  transparent: true,
+					  opacity: 0.5
+					})
+				  );
+				  starGlow.castShadow = false;
+				  scaleX += 5 + Math.random() * .5;
+				  scaleY += 5 + Math.random() * .5;
+				  scaleZ += 5 + Math.random() * .5;
+				  starGlow.scale.set(scaleX, scaleY, scaleZ);
+				  starGlow.origScale = {
+					x: scaleX,
+					y: scaleY,
+					z: scaleZ
+				  };
+				  glows.push(starGlow);
+				  sol.add(starGlow);
+				}
+				
+				return sol;
+			}
+			
+			function criaEstrelas()
+			{
+				var starsGeometry = new THREE.Geometry();
+				for ( var i = 0; i < 1000; i ++ ) {
+
+					var star = new THREE.Vector3();
+					star.x = THREE.Math.randFloatSpread( 2000 );
+					star.y = THREE.Math.randFloatSpread( 2000 );
+					star.z = THREE.Math.randFloatSpread( 2000 );
+					starsGeometry.vertices.push( star );
+					
+				}
+					
+				starsMaterial = new THREE.PointsMaterial( { color: 0x888888, side : THREE.DoubleSide } );
+				
+				estrelas = new THREE.Points( starsGeometry, starsMaterial );
+
+				scene.add( estrelas);
+				
+				var starsGeometry = new THREE.Geometry();
+				for ( var i = 0; i < 9000; i ++ ) {
+
+					var star = new THREE.Vector3();
+					star.x = THREE.Math.randFloatSpread( 2000 );
+					star.y = THREE.Math.randFloatSpread( 2000 );
+					star.z = THREE.Math.randFloatSpread( 2000 );
+					starsGeometry.vertices.push( star );
+					
+				}
+					
+				var starsMaterial2 = new THREE.PointsMaterial( { color: 0x888888, side : THREE.DoubleSide } );
+				
+				var estrelas2 = new THREE.Points( starsGeometry, starsMaterial2 );
+
+				scene.add( estrelas2);
+
+			}
+			
+			
+			document.addEventListener("keydown", onDocumentKeyDown, false);
+			function onDocumentKeyDown(event) {
+				var keyCode = event.which;
+				
+				if (keyCode == 77) {
+					
+					if(moveflag==true)
+					{
+						moveflag=false;
+					}
+					else 
+					{
+						moveflag=true;
+						if(viewer!=0)
+						{
+							restartCamera();
+						}
+					}
+					
+				}
+				else if(keyCode == 48 || keyCode== 96) 
+				{
+					mudaInfoPanel(0);
+				}
+				else if(keyCode == 49 || keyCode== 97) 
+				{
+					mudaInfoPanel(1);
+				}
+				else if(keyCode == 50 || keyCode== 98) 
+				{
+					mudaInfoPanel(2);
+				}
+				else if(keyCode == 51 || keyCode== 99) 
+				{
+					mudaInfoPanel(3);
+				}
+				else if(keyCode == 52 || keyCode== 100) 
+				{
+					mudaInfoPanel(4);
+				}
+				else if(keyCode == 53 || keyCode== 101) 
+				{
+					mudaInfoPanel(5);
+				}
+				else if(keyCode == 54 || keyCode== 102) 
+				{
+					mudaInfoPanel(6);
+				}
+				else if(keyCode == 55 || keyCode== 103) 
+				{
+					mudaInfoPanel(7);
+				}
+				else if(keyCode == 56 || keyCode== 104) 
+				{
+					mudaInfoPanel(8);
+				}
+				
+				
+			};
+			
+			function mudaInfoPanel(planeta)
+			{
+				planeta=planeta-1;
+				if(planeta==-1)
+				{
+					document.getElementById('titulo').innerHTML = "Sistema Solar";
+					document.getElementById('descricao').innerHTML ="O Sistema Solar compreende o conjunto constituído pelo Sol e todos os corpos celestes que estão sob seu domínio gravitacional. A estrela central, maior componente do sistema, respondendo por mais de 99,85% da massa total,[5] gera sua energia através da fusão de hidrogênio em hélio, dois de seus principais constituintes. Os quatro planetas mais próximos do Sol (Mercúrio, Vênus, Terra e Marte) possuem em comum uma crosta sólida e rochosa, razão pela qual se classificam no grupo dos planetas telúricos, ou rochosos. Mais afastados, os quatro gigantes gasosos, Júpiter, Saturno, Urano e Netuno, são os componentes de maior massa do sistema logo após o próprio Sol. Dos cinco planetas anões, Ceres é o que se localiza mais próximo do centro do Sistema Solar, enquanto todos os outros, Plutão, Haumea, Makemake e Éris, se encontram além da órbita de Netuno.";
+				}
+				else
+				{
+					
+					document.getElementById('titulo').innerHTML = planetasNome[planeta][0];
+					document.getElementById('descricao').innerHTML = planetasNome[planeta][7];
+					
+				}
+				
+				viewer = planeta;
+
+				mudaCamera();
+			}
+			
+			function mudaCamera()
+			{
+				if(viewer==-1)
+				{
+					restartCamera();
+					
+				}
+				else
+				{
+					var momentum = viewer;
+					moveflag=false;
+					
+			
+					var vector = new THREE.Vector3();
+					vector.setFromMatrixPosition( planetasCamera[momentum].matrixWorld );
+					
+					
+					camera.lookAt(new THREE.Vector3(vector.x, vector.y, vector.z));
+					cameraControls.target.set( vector.x, vector.y, vector.z);
+					camera.position.set(vector.x-(planetasNome[momentum][1]*10), vector.y-(planetasNome[momentum][1]*10), vector.z-(planetasNome[momentum][1]*10));
+					cameraControls.update();
+				}
+			}
+			
+			function restartCamera()
+			{
+				camera.lookAt(new THREE.Vector3(0,0,0));
+				cameraControls.target.set( 0, 0, 0 );
+				camera.position.set( 0, 220, 500 );
+				cameraControls.update();
+			}
+			
+		</script>
+		<div class="infopanel" align='center' >
+			<u  align='center' ><span id="titulo"  align='center' >Sistema Solar</span></u>
+		</div>
+		<div class="infopanel2" id="descricao" align='center' >
+			O Sistema Solar compreende o conjunto constituído pelo Sol e todos os corpos celestes que estão sob seu domínio gravitacional. A estrela central, maior componente do sistema, respondendo por mais de 99,85% da massa total,[5] gera sua energia através da fusão de hidrogênio em hélio, dois de seus principais constituintes. Os quatro planetas mais próximos do Sol (Mercúrio, Vênus, Terra e Marte) possuem em comum uma crosta sólida e rochosa, razão pela qual se classificam no grupo dos planetas telúricos, ou rochosos. Mais afastados, os quatro gigantes gasosos, Júpiter, Saturno, Urano e Netuno, são os componentes de maior massa do sistema logo após o próprio Sol. Dos cinco planetas anões, Ceres é o que se localiza mais próximo do centro do Sistema Solar, enquanto todos os outros, Plutão, Haumea, Makemake e Éris, se encontram além da órbita de Netuno.
+		</div>
+		<footer>
+			<div class="panel" align='left' width="30%">
+				- Ligar Movimento
+				<br>
+				<span>
+				Aperte "m"
+				<br>
+				</span>
+				- Mudar Ângulo de Visão
+				<br>
+				<span>
+				Botão Esquerdo do Mouse Pressionado + Mover
+				</span>
+				<br>
+				- Mover Câmera
+				<br>
+				<span>
+				Botão Direito do Mouse Presionado + Mover
+				</span>
+				<br>
+				- Ver planetas
+				<br>
+				<span>
+				Números 1 - 8
+				</span>
+				<br>
+				- Centralizar câmera
+				<br>
+				<span>
+				Número 0
+				</span>
+			</div>
+		</footer>
+	</div>
+	</body>
+</html>
